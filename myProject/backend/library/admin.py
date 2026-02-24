@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import Book, BorrowRecord, Fine
-from django.utils import timezone
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
@@ -24,12 +23,7 @@ class BorrowRecordAdmin(admin.ModelAdmin):
         count = 0
         for record in queryset:
             if record.status != 'returned':
-                record.status = 'returned'
-                record.return_date = timezone.now()
-                record.save()
-                # Rudisha idadi ya vitabu
-                record.book.available_quantity += 1
-                record.book.save()
+                record.mark_returned()
                 count += 1
         self.message_user(request, f"{count} books marked as returned successfully.")
     mark_as_returned.short_description = "Return selected books"

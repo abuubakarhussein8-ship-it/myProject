@@ -5,13 +5,8 @@ import { useAuth } from '../context/AuthContext'
 function Register() {
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
     password: '',
-    password_confirm: '',
-    member_type: 'student',
-    phone: '',
-    first_name: '',
-    last_name: ''
+    account_type: 'student',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -29,23 +24,17 @@ function Register() {
     e.preventDefault()
     setError('')
     
-    if (formData.password !== formData.password_confirm) {
-      setError('Passwords do not match')
-      return
-    }
-
     setLoading(true)
 
     try {
+      const role = formData.account_type === 'student' ? 'member' : formData.account_type
+      const memberType = formData.account_type === 'student' ? 'student' : null
       const response = await register({
         username: formData.username,
-        email: formData.email,
         password: formData.password,
-        password_confirm: formData.password_confirm,
-        member_type: formData.member_type,
-        phone: formData.phone,
-        first_name: formData.first_name,
-        last_name: formData.last_name
+        password_confirm: formData.password,
+        role,
+        member_type: memberType,
       })
       
       if (response.data) {
@@ -102,57 +91,17 @@ function Register() {
             />
           </div>
           <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>First Name</label>
-            <input
-              type="text"
-              name="first_name"
-              className="form-control"
-              value={formData.first_name}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group">
-            <label>Last Name</label>
-            <input
-              type="text"
-              name="last_name"
-              className="form-control"
-              value={formData.last_name}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group">
-            <label>Phone</label>
-            <input
-              type="text"
-              name="phone"
-              className="form-control"
-              value={formData.phone}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group">
-            <label>Member Type</label>
+            <label>Account Type</label>
             <select
-              name="member_type"
+              name="account_type"
               className="form-control"
-              value={formData.member_type}
+              value={formData.account_type}
               onChange={handleChange}
               required
             >
+              <option value="admin">Admin</option>
+              <option value="librarian">Librarian</option>
               <option value="student">Student</option>
-              <option value="teacher">Teacher</option>
             </select>
           </div>
           <div className="form-group">
@@ -162,17 +111,6 @@ function Register() {
               name="password"
               className="form-control"
               value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Confirm Password</label>
-            <input
-              type="password"
-              name="password_confirm"
-              className="form-control"
-              value={formData.password_confirm}
               onChange={handleChange}
               required
             />

@@ -1,16 +1,20 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import MemberProfile, User
+
 
 class CustomUserAdmin(UserAdmin):
-    # Hii inaonyesha columns hizi kwenye orodha ya users
-    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
-    search_fields = ('username', 'email', 'first_name', 'last_name')
-    
-    # Hii inaongeza fields zako mpya kwenye fomu ya kurekebisha user
+    list_display = ("username", "email", "first_name", "last_name", "role", "is_staff")
+    search_fields = ("username", "email", "first_name", "last_name")
     fieldsets = UserAdmin.fieldsets + (
-        ('Additional Info', {'fields': ('role', 'phone', 'address', 'member_type')}),
+        ("Role", {"fields": ("role", "member_type")}),
     )
 
-# Sajili model ya User na mipangilio hii
+
+@admin.register(MemberProfile)
+class MemberProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "phone", "membership_date", "membership_expiry")
+    search_fields = ("user__username", "phone")
+
+
 admin.site.register(User, CustomUserAdmin)

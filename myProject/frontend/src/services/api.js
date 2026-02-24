@@ -1,108 +1,105 @@
-import axios from 'axios'
+import axios from "axios";
 
-// Create axios instance
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/";
+
 const api = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  paramsSerializer: params => {
-    const searchParams = new URLSearchParams()
-    for (const key in params) {
-      if (params[key] !== undefined && params[key] !== null) {
-        searchParams.append(key, params[key])
-      }
-    }
-    searchParams.append('_', Date.now())
-    return searchParams.toString()
+  baseURL: API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
+});
+
+let refreshPromise = null;
+
+const clearAuth = () => {
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
+};
+
+const refreshAccessToken = async () => {
+  if (!refreshPromise) {
+    const refresh = localStorage.getItem("refresh");
+    refreshPromise = axios
+      .post(`${API_BASE_URL}token/refresh/`, { refresh })
+      .then((response) => {
+        const access = response.data.access;
+        localStorage.setItem("access", access);
+        return access;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
   }
-})
+  return refreshPromise;
+};
 
-// Add token to requests automatically
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('access')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
+api.interceptors.request.use((config) => {
+  const access = localStorage.getItem("access");
+  if (access) {
+    config.headers.Authorization = `Bearer ${access}`;
+  }
+  return config;
+});
 
-// Response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('access')
-      localStorage.removeItem('refresh')
-      delete api.defaults.headers.common['Authorization']
-      window.location.href = '/login'
+  async (error) => {
+    const originalRequest = error.config;
+    const isUnauthorized = error.response?.status === 401;
+    const isAuthPath =
+      originalRequest?.url?.includes("auth/login") ||
+      originalRequest?.url?.includes("auth/register") ||
+      originalRequest?.url?.includes("token/refresh");
+
+    if (isUnauthorized && !isAuthPath && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const newAccess = await refreshAccessToken();
+        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        clearAuth();
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
-export default api
+export default api;
 
-// =============================
-// AUTH API
-// =============================
 export const authAPI = {
-  login: (data) => api.post('auth/login/', data),
-  register: (data) => api.post('auth/register/', data),
-  logout: () => api.post('auth/logout/'),
-  getUser: () => api.get('auth/user/'),
-  changePassword: (data) => api.post('auth/change-password/', data)
-}
+  login: (data) => api.post("auth/login/", data),
+  register: (data) => api.post("auth/register/", data),
+  me: () => api.get("auth/me/"),
+};
 
-// =============================
-// BOOKS API
-// =============================
-export const booksAPI = {
-  getAll: (params) => api.get('books/', { params }),
-  getOne: (id) => api.get(`books/${id}/`),
-  create: (data) => api.post('books/', data),
-  update: (id, data) => api.put(`books/${id}/`, data),
-  delete: (id) => api.delete(`books/${id}/`)
-}
-
-// =============================
-// MEMBERS API (Admin only)
-// =============================
-export const membersAPI = {
-  getAll: () => api.get('users/'),
-  getOne: (id) => api.get(`users/${id}/`),
-  create: (data) => api.post('users/', data),
-  update: (id, data) => api.put(`users/${id}/`, data),
-  delete: (id) => api.delete(`users/${id}/`)
-}
-
-// =============================
-// BORROWS API
-// =============================
-export const borrowsAPI = {
-  getAll: (params) => api.get('borrows/', { params }),
-  getMyBorrows: () => api.get('borrows/'),
-  create: (data) => api.post('borrows/', data),
-  returnBook: (id) => api.put(`borrows/${id}/return/`),
-  delete: (id) => api.delete(`borrows/${id}/`)
-}
-
-// =============================
-// FINES API
-// =============================
-export const finesAPI = {
-  getAll: () => api.get('fines/'),
-  getMyFines: () => api.get('fines/'),
-  create: (data) => api.post('fines/', data),
-  payFine: (id) => api.post(`fines/${id}/pay/`)
-}
-
-// =============================
-// DASHBOARD API
-// =============================
 export const dashboardAPI = {
-  getStats: () => api.get('dashboard-stats/')
-}
+  getStats: () => api.get("dashboard-stats/"),
+};
+
+export const booksAPI = {
+  getAll: (params) => api.get("books/", { params }),
+  create: (data) => api.post("books/", data),
+  update: (id, data) => api.patch(`books/${id}/`, data),
+  delete: (id) => api.delete(`books/${id}/`),
+};
+
+export const membersAPI = {
+  getAll: (params) => api.get("auth/users/", { params }),
+  getOne: (id) => api.get(`auth/users/${id}/`),
+  create: (data) => api.post("auth/users/", data),
+  update: (id, data) => api.patch(`auth/users/${id}/`, data),
+  delete: (id) => api.delete(`auth/users/${id}/`),
+};
+
+export const borrowsAPI = {
+  getAll: (params) => api.get("borrows/", { params }),
+  getHistory: (params) => api.get("borrows/history/", { params }),
+  borrow: (data) => api.post("borrows/", data),
+  returnBook: (id) => api.post(`borrows/${id}/return_book/`),
+};
+
+export const finesAPI = {
+  getAll: (params) => api.get("fines/", { params }),
+  pay: (id) => api.post(`fines/${id}/pay/`),
+};

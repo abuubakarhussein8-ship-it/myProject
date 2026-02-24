@@ -36,8 +36,11 @@ body {
 .main-content {
   flex: 1;
   padding: 20px;
-  margin-left: 250px;
   margin-top: 60px;
+}
+
+.main-content.with-sidebar {
+  margin-left: 250px;
 }
 
 /* Navbar */
@@ -513,7 +516,8 @@ body {
     display: none;
   }
   
-  .main-content {
+  .main-content,
+  .main-content.with-sidebar {
     margin-left: 0;
   }
   

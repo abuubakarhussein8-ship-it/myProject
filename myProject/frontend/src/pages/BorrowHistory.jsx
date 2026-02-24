@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
-import { finesAPI } from "../services/api";
+import { borrowsAPI } from "../services/api";
 
-function Fines() {
+function BorrowHistory() {
   const { user } = useAuth();
-  const [fines, setFines] = useState([]);
+  const [records, setRecords] = useState([]);
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const fetchFines = async (currentPage = page) => {
+  const fetchRecords = async (currentPage = page) => {
     setLoading(true);
     try {
-      const response = await finesAPI.getAll({ page: currentPage, page_size: 10 });
-      setFines(response.data.results || []);
+      const response = await borrowsAPI.getHistory({ page: currentPage, page_size: 10 });
+      setRecords(response.data.results || []);
       setCount(response.data.count || 0);
     } finally {
       setLoading(false);
@@ -22,19 +22,19 @@ function Fines() {
   };
 
   useEffect(() => {
-    fetchFines();
+    fetchRecords();
   }, [page]);
 
-  const payFine = async (id) => {
-    await finesAPI.pay(id);
-    fetchFines();
+  const returnBook = async (id) => {
+    await borrowsAPI.returnBook(id);
+    fetchRecords();
   };
 
   const maxPage = Math.max(1, Math.ceil(count / 10));
 
   return (
     <div>
-      <h1>Fines View</h1>
+      <h1>Borrow History</h1>
       {loading ? (
         <div className="loading"><div className="spinner" /></div>
       ) : (
@@ -44,24 +44,28 @@ function Fines() {
               <tr>
                 {user?.role !== "member" && <th>Member</th>}
                 <th>Book</th>
-                <th>Amount</th>
-                <th>Reason</th>
+                <th>Borrow Date</th>
+                <th>Due Date</th>
+                <th>Return Date</th>
+                <th>Fine</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {fines.map((fine) => (
-                <tr key={fine.id}>
-                  {user?.role !== "member" && <td>{fine.member_details?.username}</td>}
-                  <td>{fine.book_title || "-"}</td>
-                  <td>${fine.amount}</td>
-                  <td>{fine.reason}</td>
-                  <td>{fine.status}</td>
+              {records.map((record) => (
+                <tr key={record.id}>
+                  {user?.role !== "member" && <td>{record.member_details?.username}</td>}
+                  <td>{record.book_details?.title}</td>
+                  <td>{new Date(record.borrow_date).toLocaleDateString()}</td>
+                  <td>{new Date(record.due_date).toLocaleDateString()}</td>
+                  <td>{record.return_date ? new Date(record.return_date).toLocaleDateString() : "-"}</td>
+                  <td>${record.fine_amount}</td>
+                  <td>{record.status}</td>
                   <td>
-                    {fine.status !== "paid" && (
-                      <button className="btn btn-success" onClick={() => payFine(fine.id)}>
-                        Pay
+                    {record.status !== "returned" && (
+                      <button className="btn btn-success" onClick={() => returnBook(record.id)}>
+                        Return
                       </button>
                     )}
                   </td>
@@ -81,4 +85,4 @@ function Fines() {
   );
 }
 
-export default Fines;
+export default BorrowHistory;

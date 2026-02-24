@@ -1,34 +1,29 @@
-import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from "react-router-dom";
 
 function Sidebar() {
-  const location = useLocation()
-  
+  const location = useLocation();
   const menuItems = [
-    { path: '/admin', label: 'Dashboard', icon: '📊' },
-    { path: '/books', label: 'Books', icon: '📚' },
-    { path: '/members', label: 'Members', icon: '👥' },
-    { path: '/borrows', label: 'Borrows', icon: '📖' },
-    { path: '/fines', label: 'Fines', icon: '💰' }
-  ]
+    { path: "/dashboard/staff", label: "Dashboard" },
+    { path: "/books", label: "Books" },
+    { path: "/members", label: "Members" },
+    { path: "/borrow-book", label: "Borrow Book" },
+    { path: "/borrow-history", label: "Borrow History" },
+    { path: "/fines", label: "Fines" },
+  ];
 
   return (
     <aside className="sidebar">
       <ul className="sidebar-menu">
         {menuItems.map((item) => (
           <li key={item.path}>
-            <Link 
-              to={item.path} 
-              className={location.pathname === item.path ? 'active' : ''}
-            >
-              <span style={{ marginRight: '10px' }}>{item.icon}</span>
+            <Link to={item.path} className={location.pathname === item.path ? "active" : ""}>
               {item.label}
             </Link>
           </li>
         ))}
       </ul>
     </aside>
-  )
+  );
 }
 
-export default Sidebar
+export default Sidebar;

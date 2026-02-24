@@ -1,104 +1,122 @@
-import React from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from './context/AuthContext'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
-import AdminDashboard from './pages/AdminDashboard'
-import Books from './pages/Books'
-import Members from './pages/Members'
-import Borrows from './pages/Borrows'
-import Fines from './pages/Fines'
-import Navbar from './components/Navbar'
-import Sidebar from './components/Sidebar'
-import './App.css'
+import { Navigate, Route, Routes } from "react-router-dom";
 
-function PrivateRoute({ children }) {
-  const { user } = useAuth()
-  return user ? children : <Navigate to="/login" />
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
+import { useAuth } from "./context/AuthContext";
+import AdminDashboard from "./pages/AdminDashboard";
+import Books from "./pages/Books";
+import BorrowBook from "./pages/BorrowBook";
+import BorrowHistory from "./pages/BorrowHistory";
+import Dashboard from "./pages/Dashboard";
+import Fines from "./pages/Fines";
+import Login from "./pages/Login";
+import Members from "./pages/Members";
+import Register from "./pages/Register";
+import "./App.css";
+
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? children : <Navigate to="/login" replace />;
 }
 
-function AdminRoute({ children }) {
-  const { user } = useAuth()
-  return user && user.role === 'admin' ? children : <Navigate to="/dashboard" />
+function RoleRoute({ allowedRoles, children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return allowedRoles.includes(user.role) ? children : <Navigate to="/" replace />;
+}
+
+function roleHome(user) {
+  if (!user) return "/login";
+  if (user.role === "member") return "/dashboard/member";
+  return "/dashboard/staff";
 }
 
 function App() {
-  const { user } = useAuth()
+  const { user } = useAuth();
+  const hasSidebar = user && user.role !== "member";
 
   return (
     <div className="app">
       {user && <Navbar />}
       <div className="app-container">
-        {user && user.role === 'admin' && <Sidebar />}
-        <div className="main-content">
+        {hasSidebar && <Sidebar />}
+        <div className={`main-content ${hasSidebar ? "with-sidebar" : ""}`}>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route 
-              path="/dashboard" 
+
+            <Route
+              path="/dashboard/member"
               element={
-                user?.role === "admin"? (
-                  <Navigate to="/admin" />
-                ) : (
-                  <PrivateRoute>
-                    <Dashboard />
-                  </PrivateRoute>
-                )
+                <RoleRoute allowedRoles={["member"]}>
+                  <Dashboard />
+                </RoleRoute>
               }
             />
-            <Route 
-              path="/admin" 
+
+            <Route
+              path="/dashboard/staff"
               element={
-                <AdminRoute>
+                <RoleRoute allowedRoles={["admin", "librarian"]}>
                   <AdminDashboard />
-                </AdminRoute>
+                </RoleRoute>
               }
             />
-            <Route 
-              path="/books" 
+
+            <Route
+              path="/books"
               element={
-                <PrivateRoute>
+                <ProtectedRoute>
                   <Books />
-                </PrivateRoute>
-              } 
+                </ProtectedRoute>
+              }
             />
-            <Route 
-              path="/members" 
+
+            <Route
+              path="/members"
               element={
-                <AdminRoute>
+                <RoleRoute allowedRoles={["admin", "librarian"]}>
                   <Members />
-                </AdminRoute>
-              } 
+                </RoleRoute>
+              }
             />
-            <Route 
-              path="/borrows" 
+
+            <Route
+              path="/borrow-book"
               element={
-                <PrivateRoute>
-                  <Borrows />
-                </PrivateRoute>
-              } 
+                <ProtectedRoute>
+                  <BorrowBook />
+                </ProtectedRoute>
+              }
             />
-            <Route 
-              path="/fines" 
+
+            <Route
+              path="/borrow-history"
               element={
-                <PrivateRoute>
+                <ProtectedRoute>
+                  <BorrowHistory />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/fines"
+              element={
+                <ProtectedRoute>
                   <Fines />
-                </PrivateRoute>
-              } 
+                </ProtectedRoute>
+              }
             />
-            <Route path="/" element={
-              user ? (
-                user.role === 'admin' ? <Navigate to="/admin" /> : <Navigate to="/dashboard" />
-              ) : (
-                <Navigate to="/login" />
-              )
-            } />
+
+            <Route path="/" element={<Navigate to={roleHome(user)} replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

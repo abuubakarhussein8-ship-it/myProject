@@ -26,14 +26,8 @@ function Login() {
 
     try {
       const user = await login(formData.username, formData.password)
-      // Redirect based on user role and member type
-      // Admin users go to admin dashboard, all others (including member/student) go to regular dashboard
-      if (user.role === 'admin') {
-        navigate('/admin')
-      } else {
-        // Members with role 'member' and member_type 'student' go to dashboard
-        navigate('/dashboard')
-      }
+      if (user.role === 'member') navigate('/dashboard/member')
+      else navigate('/dashboard/staff')
     } catch (err) {
       setError(err.response?.data?.detail || 'Login failed. Please try again.')
     } finally {
