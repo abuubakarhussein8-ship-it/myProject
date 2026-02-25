@@ -109,10 +109,14 @@ Frontend URL: `http://127.0.0.1:5173`
 
 ### 1) Backend on Render
 - Push this repo to GitHub.
-- In Render, create a new **Blueprint** and select your repo (it will use [`render.yaml`](/c:/Users/Jewish/Desktop/New folder/myProject/render.yaml)).
+- In Render, create a new **Blueprint** and select your repo root (use [`render.yaml`](/c:/Users/Jewish/Desktop/New folder/render.yaml)).
 - Set these backend env vars in Render:
   - `DJANGO_SECRET_KEY`
-  - `DATABASE_URL` (use your existing Render Postgres external URL)
+  - `POSTGRES_HOST` (optional now, required for PostgreSQL)
+  - `POSTGRES_DB`
+  - `POSTGRES_USER`
+  - `POSTGRES_PASSWORD`
+  - `POSTGRES_PORT` (default `5432`)
   - `CORS_ALLOWED_ORIGINS` (set to your Vercel URL, e.g. `https://your-app.vercel.app`)
   - `CSRF_TRUSTED_ORIGINS` (same Vercel URL)
 - Render build runs [`backend/build.sh`](/c:/Users/Jewish/Desktop/New folder/myProject/backend/build.sh), which now does:
@@ -120,7 +124,7 @@ Frontend URL: `http://127.0.0.1:5173`
   - `collectstatic`
 
 ### 2) Frontend on Vercel
-- In Vercel, import the same repo and set **Root Directory** to `frontend`.
+- In Vercel, import the same repo and set **Root Directory** to `myProject/frontend`.
 - Vercel uses [`frontend/vercel.json`](/c:/Users/Jewish/Desktop/New folder/myProject/frontend/vercel.json) for SPA rewrites.
 - Add frontend env var:
   - `VITE_API_BASE_URL=https://<your-render-service>.onrender.com/api/`
