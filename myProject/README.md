@@ -104,3 +104,27 @@ Frontend URL: `http://127.0.0.1:5173`
 
 ### Dashboard
 - `GET /api/dashboard-stats/`
+
+## Deploy (Render + Vercel)
+
+### 1) Backend on Render
+- Push this repo to GitHub.
+- In Render, create a new **Blueprint** and select your repo (it will use [`render.yaml`](/c:/Users/Jewish/Desktop/New folder/myProject/render.yaml)).
+- Set these backend env vars in Render:
+  - `DJANGO_SECRET_KEY`
+  - `DEFAULT_ADMIN_USERNAME`
+  - `DEFAULT_ADMIN_PASSWORD`
+  - `DEFAULT_ADMIN_EMAIL` (optional)
+  - `CORS_ALLOWED_ORIGINS` (set to your Vercel URL, e.g. `https://your-app.vercel.app`)
+  - `CSRF_TRUSTED_ORIGINS` (same Vercel URL)
+- Render build runs [`backend/build.sh`](/c:/Users/Jewish/Desktop/New folder/myProject/backend/build.sh), which now does:
+  - `migrate`
+  - `create_default_admin`
+  - `collectstatic`
+
+### 2) Frontend on Vercel
+- In Vercel, import the same repo and set **Root Directory** to `frontend`.
+- Vercel uses [`frontend/vercel.json`](/c:/Users/Jewish/Desktop/New folder/myProject/frontend/vercel.json) for SPA rewrites.
+- Add frontend env var:
+  - `VITE_API_BASE_URL=https://<your-render-service>.onrender.com/api/`
+- Deploy.

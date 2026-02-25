@@ -26,7 +26,8 @@ class User(AbstractUser):
         return self.username
 
     def save(self, *args, **kwargs):
-        self.is_staff = self.role in {"admin", "librarian"}
+        # Never demote superusers from Django admin access.
+        self.is_staff = self.is_superuser or self.role in {"admin", "librarian"}
         super().save(*args, **kwargs)
 
 

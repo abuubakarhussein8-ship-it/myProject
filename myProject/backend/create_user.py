@@ -1,35 +1,28 @@
-import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+"""
+Compatibility script for creating the default admin user.
 
-# Connect to the default postgres database
-conn = psycopg2.connect(
-    host='localhost',
-    port='5432',
-    database='postgres',
-    user='postgres',
-    password='Abu2026'
-)
-conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-cur = conn.cursor()
+Prefer running:
+    python manage.py create_default_admin
+"""
 
-# Create the user
-try:
-    cur.execute("CREATE USER Abuu WITH PASSWORD 'Abu2026';")
-    print("User 'Abuu' created successfully!")
-except Exception as e:
-    print(f"Error creating user: {e}")
+import os
+import subprocess
+import sys
 
-# Grant privileges
-try:
-    cur.execute("GRANT ALL PRIVILEGES ON DATABASE library_db TO Abuu;")
-    print("Privileges granted!")
-except Exception as e:
-    print(f"Error granting privileges: {e}")
 
-# Verify
-cur.execute("SELECT rolname FROM pg_roles WHERE rolname = 'Abuu'")
-users = cur.fetchall()
-print("Users after creation:", users)
+def main() -> int:
+    username = os.getenv("DEFAULT_ADMIN_USERNAME")
+    password = os.getenv("DEFAULT_ADMIN_PASSWORD")
 
-cur.close()
-conn.close()
+    if not username or not password:
+        print(
+            "Set DEFAULT_ADMIN_USERNAME and DEFAULT_ADMIN_PASSWORD before running this script.",
+            file=sys.stderr,
+        )
+        return 1
+
+    return subprocess.call([sys.executable, "manage.py", "create_default_admin"])
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

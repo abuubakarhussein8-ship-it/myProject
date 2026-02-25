@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
@@ -27,6 +27,12 @@ function RoleRoute({ allowedRoles, children }) {
   return allowedRoles.includes(user.role) ? children : <Navigate to="/" replace />;
 }
 
+function PublicOnlyRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? <Navigate to={roleHome(user)} replace /> : children;
+}
+
 function roleHome(user) {
   if (!user) return "/login";
   if (user.role === "member") return "/dashboard/member";
@@ -34,18 +40,35 @@ function roleHome(user) {
 }
 
 function App() {
-  const { user } = useAuth();
-  const hasSidebar = user && user.role !== "member";
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const isAuthPage = ["/login", "/register"].includes(location.pathname);
+  const showShell = !loading && !!user && !isAuthPage;
+  const hasSidebar = showShell && user.role !== "member";
 
   return (
     <div className="app">
-      {user && <Navbar />}
+      {showShell && <Navbar />}
       <div className="app-container">
-        {hasSidebar && <Sidebar />}
+        {showShell && hasSidebar && <Sidebar />}
         <div className={`main-content ${hasSidebar ? "with-sidebar" : ""}`}>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute>
+                  <Login />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicOnlyRoute>
+                  <Register />
+                </PublicOnlyRoute>
+              }
+            />
 
             <Route
               path="/dashboard/member"
