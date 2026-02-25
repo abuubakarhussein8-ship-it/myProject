@@ -112,14 +112,11 @@ Frontend URL: `http://127.0.0.1:5173`
 - In Render, create a new **Blueprint** and select your repo (it will use [`render.yaml`](/c:/Users/Jewish/Desktop/New folder/myProject/render.yaml)).
 - Set these backend env vars in Render:
   - `DJANGO_SECRET_KEY`
-  - `DEFAULT_ADMIN_USERNAME`
-  - `DEFAULT_ADMIN_PASSWORD`
-  - `DEFAULT_ADMIN_EMAIL` (optional)
+  - `DATABASE_URL` (use your existing Render Postgres external URL)
   - `CORS_ALLOWED_ORIGINS` (set to your Vercel URL, e.g. `https://your-app.vercel.app`)
   - `CSRF_TRUSTED_ORIGINS` (same Vercel URL)
 - Render build runs [`backend/build.sh`](/c:/Users/Jewish/Desktop/New folder/myProject/backend/build.sh), which now does:
   - `migrate`
-  - `create_default_admin`
   - `collectstatic`
 
 ### 2) Frontend on Vercel
