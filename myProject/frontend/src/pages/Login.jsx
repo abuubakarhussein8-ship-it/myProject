@@ -29,7 +29,11 @@ function Login() {
       if (user.role === 'member') navigate('/dashboard/member')
       else navigate('/dashboard/staff')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Please try again.')
+      if (err.response) {
+        setError(err.response?.data?.detail || 'Login failed. Please try again.')
+      } else {
+        setError('Unable to connect to backend. Check API URL/CORS settings.')
+      }
     } finally {
       setLoading(false)
     }
@@ -42,7 +46,7 @@ function Login() {
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Username</label>
+            <label>Username or Email</label>
             <input
               type="text"
               name="username"

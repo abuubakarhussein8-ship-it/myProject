@@ -40,13 +40,19 @@ class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        username = request.data.get("username")
+        username = request.data.get("username") or request.data.get("email")
         password = request.data.get("password")
         if not username or not password:
             return Response(
-                {"detail": "Username and password are required."},
+                {"detail": "Username/email and password are required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # Allow logging in with either username or email.
+        if "@" in username:
+            matched_user = User.objects.filter(email__iexact=username).first()
+            if matched_user:
+                username = matched_user.username
 
         user = authenticate(username=username, password=password)
         if not user:
