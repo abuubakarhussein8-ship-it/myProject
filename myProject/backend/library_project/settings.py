@@ -8,10 +8,14 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
+
+def _split_csv_env(value: str) -> list[str]:
+    return [item.strip().rstrip("/") for item in value.split(",") if item.strip()]
+
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-secret-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = _split_csv_env(os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost"))
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -101,15 +105,21 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.User"
 
-cors_origins_raw = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_raw.split(",") if origin.strip()]
+cors_origins_raw = os.getenv(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,https://my-project-sable-beta.vercel.app",
+)
+CORS_ALLOWED_ORIGINS = _split_csv_env(cors_origins_raw)
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.vercel\.app$",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-csrf_trusted_raw = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
-CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_raw.split(",") if origin.strip()]
+csrf_trusted_raw = os.getenv(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,https://my-project-sable-beta.vercel.app",
+)
+CSRF_TRUSTED_ORIGINS = _split_csv_env(csrf_trusted_raw)
 if "https://*.vercel.app" not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append("https://*.vercel.app")
 
