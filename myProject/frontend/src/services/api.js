@@ -3,7 +3,9 @@ import axios from "axios";
 const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const isLocalhost =
   window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const fallbackBaseUrl = isLocalhost ? "http://127.0.0.1:8000/api/" : `${window.location.origin}/api/`;
+const fallbackBaseUrl = isLocalhost
+  ? "http://127.0.0.1:8000/api/"
+  : "https://library-backend.onrender.com/api/";
 const API_BASE_URL = (configuredBaseUrl || fallbackBaseUrl).replace(/\/?$/, "/");
 
 const api = axios.create({

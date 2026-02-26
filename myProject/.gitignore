@@ -3,3 +3,4 @@ frontend/dist/
 backend/venv/
 backend/staticfiles/
 backend/db.sqlite3
+backend/.env
