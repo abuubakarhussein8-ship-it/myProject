@@ -5,7 +5,7 @@ const isLocalhost =
   window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 const fallbackBaseUrl = isLocalhost
   ? "http://127.0.0.1:8000/api/"
-  : "https://library-backend.onrender.com/api/";
+  : "https://library-backend-1j0d.onrender.com/api/";
 const API_BASE_URL = (configuredBaseUrl || fallbackBaseUrl).replace(/\/?$/, "/");
 
 const api = axios.create({

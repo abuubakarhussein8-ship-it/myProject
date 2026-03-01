@@ -127,6 +127,7 @@ cors_origins_raw = os.getenv(
 CORS_ALLOWED_ORIGINS = _split_csv_env(cors_origins_raw)
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.vercel\.app$",
+    r"^https://.*\.onrender\.com$",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -137,6 +138,8 @@ csrf_trusted_raw = os.getenv(
 CSRF_TRUSTED_ORIGINS = _split_csv_env(csrf_trusted_raw)
 if "https://*.vercel.app" not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append("https://*.vercel.app")
+if "https://*.onrender.com" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
