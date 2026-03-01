@@ -23,11 +23,17 @@ const clearAuth = () => {
 const refreshAccessToken = async () => {
   if (!refreshPromise) {
     const refresh = localStorage.getItem("refresh");
+    if (!refresh) {
+      return Promise.reject(new Error("No refresh token available"));
+    }
     refreshPromise = axios
       .post(`${API_BASE_URL}token/refresh/`, { refresh })
       .then((response) => {
-        const access = response.data.access;
+        const { access, refresh: newRefresh } = response.data;
         localStorage.setItem("access", access);
+        if (newRefresh) {
+          localStorage.setItem("refresh", newRefresh);
+        }
         return access;
       })
       .finally(() => {
