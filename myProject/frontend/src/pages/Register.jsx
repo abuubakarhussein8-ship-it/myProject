@@ -99,7 +99,6 @@ function Register() {
               onChange={handleChange}
               required
             >
-              <option value="admin">Admin</option>
               <option value="librarian">Librarian</option>
               <option value="student">Student</option>
             </select>
@@ -119,6 +118,9 @@ function Register() {
             {loading ? 'Registering...' : 'Register'}
           </button>
         </form>
+        <p>
+          Admin account? <Link to="/login">Login as Admin</Link>
+        </p>
         <p>
           Already have an account? <Link to="/login">Login</Link>
         </p>

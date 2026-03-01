@@ -75,9 +75,13 @@ class RegisterSerializer(serializers.ModelSerializer):
                 {"password_confirm": "Password fields did not match."}
             )
         role = attrs.get("role", "member")
+        if role == "admin":
+            raise serializers.ValidationError(
+                {"role": "Admin accounts cannot be registered. Please login as admin."}
+            )
         if role == "member" and not attrs.get("member_type"):
             attrs["member_type"] = "student"
-        if role in {"admin", "librarian"}:
+        if role == "librarian":
             attrs["member_type"] = None
         return attrs
 
