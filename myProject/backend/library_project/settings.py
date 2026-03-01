@@ -3,6 +3,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -66,6 +67,20 @@ WSGI_APPLICATION = "library_project.wsgi.application"
 DATABASE_URL = os.getenv("DATABASE_URL")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST")
 if DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.strip()
+    if DATABASE_URL.lower().startswith("database_url="):
+        DATABASE_URL = DATABASE_URL.split("=", 1)[1].strip()
+    if (DATABASE_URL.startswith('"') and DATABASE_URL.endswith('"')) or (
+        DATABASE_URL.startswith("'") and DATABASE_URL.endswith("'")
+    ):
+        DATABASE_URL = DATABASE_URL[1:-1].strip()
+    if DATABASE_URL.startswith("://"):
+        DATABASE_URL = f"postgresql{DATABASE_URL}"
+    if "://" not in DATABASE_URL:
+        raise ImproperlyConfigured(
+            "Invalid DATABASE_URL format. It must start with a valid scheme like "
+            "'postgresql://'."
+        )
     DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
 elif POSTGRES_HOST:
     DATABASES = {
