@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: bash build.sh
-    startCommand: gunicorn library_project.wsgi:application
+    startCommand: bash start.sh
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
